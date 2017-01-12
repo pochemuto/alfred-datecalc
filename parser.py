@@ -3,6 +3,8 @@
 from funcparserlib.lexer import make_tokenizer, Token
 from funcparserlib.parser import (some, a, maybe, many, finished, skip,
                                   forward_decl, NoParseError)
+import token
+from functools import reduce
 from pprint import pprint
 
 def tokenize(str):
@@ -22,14 +24,20 @@ def parse(seq):
   word = some(lambda t: t.type == 'WORD')
   open_brace = skip(a(Token('BR', '(')))
   close_brace = skip(a(Token('BR', ')')))
+  endmark = a(Token(token.ENDMARKER, ''))
 
   def tokval(token):
     return token.value
 
+  def words(tokens):
+    return " ".join(map(tokval, tokens)) or None
+
   def make_atom(data):
-    fst, left = data
-    unit = " ".join(map(tokval, left)) or None
-    return Atom(fst.value, unit)
+    value, unit, left = data
+    right = Atom(value.value, words(unit))
+    if left:
+      return AddOperator([right, left[0]])
+    return right
 
   def make_operator(data):
     arg1, lst = data
@@ -41,27 +49,53 @@ def parse(seq):
   def operator(symbol, node):
     return a(Token('OP', symbol)) >> (lambda _: node)
 
+  def make_root(data):
+    fst, left = data
+    unit = words(left)
+
+    return Root(fst, unit)
+
   add = operator('+', AddOperator)
   sub = operator('-', SubOperator)
   mul = operator('*', MulOperator)
   div = operator('/', DivOperator)
+  now = a(Token('WORD', 'now')) >> (lambda _: Now())
+  yesterday = a(Token('WORD', 'yesterday')) >> (lambda _: Yesterday())
+  keyword = now | yesterday
   add_op = add | sub
   mul_op = mul | div
   unit = many(word)
   number = some(lambda t: t.type == 'NUMBER')
   expr = forward_decl()
 
-  value = number + maybe(unit) >> make_atom
-  basexpr = open_brace + expr + close_brace | value
+  value = number >> (lambda t: Atom(t.value, None))
+  datetime = forward_decl()
+  datetime_r = number + unit + many(datetime) >> make_atom
+  datetime.define(datetime_r)
+  basexpr = open_brace + expr + close_brace | keyword | datetime | value
   mulexpr = basexpr + many(mul_op + basexpr) >> make_operator
   addexp = mulexpr + many(add_op + mulexpr) >> make_operator
-  # function = word + open_brace + close_brace >> Function
+
   expr.define(addexp)
 
-  return expr.parse(seq)
+  # formatexp = expr + maybe(unit) + endmark >> make_root
+  formatexp = expr + maybe(unit) >> make_root
+
+  return formatexp.parse(seq)
 
 class AST(object):
   children = ()
+
+class Root(AST):
+  def __init__(self, expr, format=None):
+    self.expr = expr
+    self.format = format
+
+  def __repr__(self):
+    return "Root(%s, %s)" % (self.expr, self.format)
+
+  def eval(self):
+    return self.expr.eval()
 
 class Operator(AST):
   value = None
@@ -71,6 +105,22 @@ class Operator(AST):
 
   def __repr__(self):
     return "%s %s (%s)" % (self.__class__.__name__, self.value, list(map(repr, self.children)))
+
+  def eval(self):
+    assert len(self.children) == 2
+    return self.action(self.children[0].eval(), self.children[1].eval())
+
+class Keyword(AST):
+  def __repr__(self):
+    return "Keyword(%s)" % self.__class__.__name__
+
+class Now(Keyword):
+  def eval(self):
+    return 42  
+
+class Yesterday(Keyword):
+  def eval(self):
+    return 13
 
 class Atom(AST):
   def __init__(self, value, unit):
@@ -83,17 +133,32 @@ class Atom(AST):
     else:
       return "Atom(%s %s)" % (self.value, self.unit)
 
+  def eval(self):
+    try:
+      return int(self.value)
+    except ValueError:
+      return float(self.value)
+
 class AddOperator(Operator):
   value = '+'
+  def action(self, x, y):
+    return x + y
 
 class SubOperator(Operator):
   value = '-'
+  def action(self, x, y):
+    return x - y
+
 
 class MulOperator(Operator):
   value = '*'
+  def action(self, x, y):
+    return x * y
 
 class DivOperator(Operator):
-  value = '-'
+  value = '/'
+  def action(self, x, y):
+    return x / y
 
 class Calculator(object):
 
@@ -114,7 +179,7 @@ class Calculator(object):
 
 c = Calculator()
 
-inp = "1.5 working day off + (1 working day * 2) * 3 weeks"
+inp = "1 year + 1 month + 3 days * 2"
 print("input:", inp)
 print("tokens:")
 print(tokenize(inp))
@@ -122,6 +187,7 @@ print("---- PARSING ----")
 tree = parse(tokenize(inp))
 print("tree:")
 print(tree)
+print("result:", tree.eval())
 
 class Result(object):
 
