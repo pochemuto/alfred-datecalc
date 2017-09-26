@@ -20,12 +20,29 @@ class unit:
         return cls
 
 
+def select_unit(name):
+    if name in units_names:
+        return units_names[name]
+    else:
+        raise UndefinedUnitException(name)
+
+
+class UndefinedUnitException(Exception):
+    def __init__(self, unit_definition):
+        super().__init__("Unknown unit definition: '{}'".format(unit_definition))
+        
+
+class OperationError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class ScaleUnit(Unit):
     multiplicator = 1
     
     def __add__(self, other):
         if not self._compatible_with(other):
-            raise ArithmeticError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
+            raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
         
         smaller, bigger, k = self._order_arguments(other)
         return smaller.__class__(bigger.value * k + smaller.value)
@@ -88,6 +105,11 @@ class DateTime(Unit):
 
 
 class Duration(ScaleUnit):
+    is_domain = True
+
+
+@unit()
+class Number(ScaleUnit):
     is_domain = True
 
 

@@ -84,6 +84,7 @@ class UnitDefine(AST):
         return "UnitDefine( %s %s )" % (self.children[0], self.unit)
 
     def eval(self):
+        # todo: implement
         return self.children[0].eval()
 
 
@@ -119,6 +120,9 @@ class Unit:
     names = []
     multiplicator = 1
     is_domain = False
+
+    def eval(self):
+        return self
 
     def __init__(self, value=None, name=None):
         if name:

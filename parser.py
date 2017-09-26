@@ -8,6 +8,7 @@ from functools import reduce
 from pprint import pprint
 
 from ast import *
+from unit import select_unit, Number
 
 
 class Parser:
@@ -43,7 +44,11 @@ class Parser:
 
         def make_atom(data):
             value, unit, left = data
-            right = Atom(value.value, unit)
+            try:
+                value = int(value.value)
+            except:
+                value = float(value.value)
+            right = unit(value)
             if left:
                 return AddOperator([right, left[0]])
             return right
@@ -57,9 +62,9 @@ class Parser:
 
         def make_unit(tokens):
             if not tokens:
-                return None
+                return Number
             unit_name = words(tokens)
-            return Unit(name=unit_name)
+            return select_unit(unit_name)
 
         def make_unit_define(tokens):
             expr, unit = tokens
@@ -107,7 +112,7 @@ class Parser:
 
 if __name__ == '__main__':
     parser = Parser()
-    inp = "(2 + 3 nasta ) * ( 4 week - 1 day )"
+    inp = "( 4 week - 1 day )"
     print("input:", inp)
     print("tokens:")
 
