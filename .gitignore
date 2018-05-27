@@ -1,3 +1,8 @@
 .virtualenvs
 __pycache__
-.pyc
+*.pyc
+*.iml
+.vscode
+.idea
+/home
+/yandex
