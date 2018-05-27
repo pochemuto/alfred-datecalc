@@ -84,8 +84,7 @@ class UnitDefine(AST):
         return "UnitDefine( %s %s )" % (self.children[0], self.unit)
 
     def eval(self):
-        # todo: implement
-        return self.children[0].eval()
+       return self.children[0].eval().cast(self.unit)
 
 
 class AddOperator(Operator):

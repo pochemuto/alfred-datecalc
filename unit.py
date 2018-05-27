@@ -73,6 +73,12 @@ class ScaleUnit(Unit):
     def raw(self):
         return self.value * self.k()
 
+    def cast(self, unit):
+        if not issubclass(unit, self.domain()):
+            raise OperationError("Cannot cast {0} to {1}".format(self, unit))
+        else:
+            return unit(self.raw() / float(ScaleUnit._k_of_unit(unit)))
+
     def _same_domain(self, other):
         return self.domain() == other.domain()
 
@@ -86,8 +92,12 @@ class ScaleUnit(Unit):
         return domain
 
     def k(self):
+        return ScaleUnit._k_of_unit(self.__class__)
+
+    @staticmethod
+    def _k_of_unit(unit):
         k = 1
-        for cls in getmro(self.__class__):
+        for cls in getmro(unit):
             if cls == ScaleUnit:
                 break
             k *= cls.multiplicator
@@ -117,6 +127,9 @@ class Duration(ScaleUnit):
 @unit()
 class Number(ScaleUnit):
     is_domain = True
+
+    def __str__(self):
+        return str(self.value)
 
 
 @unit("millisecond", "milliseconds", "ms")

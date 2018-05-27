@@ -48,6 +48,7 @@ class Parser:
             return Atom(t.value, None)
 
         def make_atom(data):
+            print(data)
             value, unit, left = data
             try:
                 value = int(value.value)
@@ -58,6 +59,13 @@ class Parser:
                 return AddOperator([right, left[0]])
             return right
 
+        def make_signed_atom(data):
+            sign, atom = data            
+            if sign.value == '-':
+                return Number(-1) * atom
+            else: 
+                return atom
+            
         def make_operator(data):
             arg1, lst = data
             for f, arg2 in lst:
@@ -88,6 +96,7 @@ class Parser:
         sub = operator('-', SubOperator)
         mul = operator('*', MulOperator)
         div = operator('/', DivOperator)
+        sign = lambda t: t.type == 'OP' and t.value == '-'
         now = a(Token('WORD', 'now')) >> (lambda _: Now())
         yesterday = a(Token('WORD', 'yesterday')) >> (lambda _: Yesterday())
         keyword = now | yesterday
@@ -98,11 +107,13 @@ class Parser:
         expr = forward_decl()
 
         raw_value = number >> make_raw_value
+        signed_raw_value = some(sign) + number >> make_signed_atom
         value = forward_decl()
         value_r = number + unit + many(value) >> make_atom
         value.define(value_r)
+        signed_value = some(sign) + value >> make_signed_atom
         in_braces = open_brace + expr + close_brace + maybe(unit) >> make_unit_define
-        basexpr = in_braces | keyword | value | raw_value
+        basexpr = in_braces | keyword | signed_value | value | signed_raw_value | raw_value
         mulexpr = basexpr + many(mul_op + basexpr) >> make_operator
         addexp = mulexpr + many(add_op + mulexpr) >> make_operator
 
@@ -118,7 +129,7 @@ class Parser:
 if __name__ == '__main__':
     parser = Parser()
     
-    inp = "(1 week - 2.5 days) hour"
+    inp = "-65"
     print("input:", inp)
     print("tokens:")
 
