@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2.7
 # coding=utf
+from __future__ import print_function
 from funcparserlib.lexer import make_tokenizer, Token
 from funcparserlib.parser import (some, a, maybe, many, finished, skip,
                                   forward_decl, NoParseError)
@@ -41,6 +42,10 @@ class Parser:
 
         def words(tokens):
             return " ".join(map(tokval, tokens))
+
+        def make_raw_value(data):
+            value = data
+            return Atom(t.value, None)
 
         def make_atom(data):
             value, unit, left = data
@@ -92,7 +97,7 @@ class Parser:
         number = some(lambda t: t.type == 'NUMBER')
         expr = forward_decl()
 
-        raw_value = number >> (lambda t: Atom(t.value, None))
+        raw_value = number >> make_raw_value
         value = forward_decl()
         value_r = number + unit + many(value) >> make_atom
         value.define(value_r)
@@ -112,7 +117,8 @@ class Parser:
 
 if __name__ == '__main__':
     parser = Parser()
-    inp = "( 4 week - 1 day )"
+    
+    inp = "(1 week - 2.5 days) hour"
     print("input:", inp)
     print("tokens:")
 

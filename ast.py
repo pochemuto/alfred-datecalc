@@ -127,13 +127,19 @@ class Unit:
     def __init__(self, value=None, name=None):
         if name:
             self.names = (name,)
-        self.value = None
+        self.value = value
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
         if self.value:
-            return "{0}({1})".format(self.names[0] if self.names else "", self.value)
+            return "{0}({1})".format(self._default_name(), self.value)
         else:
-            return self.names[0] if self.names else ""
+            return self._default_name()
+
+    def _default_name(self):
+        if self.names:
+            return self.names[0]
+        else:
+            return self.__class__

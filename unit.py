@@ -1,8 +1,9 @@
 # coding=utf
+from __future__ import print_function
 from ast import Unit, Atom
+from inspect import getmro
 
 units_names = {}
-
 
 class unit:
     def __init__(self, *names):
@@ -13,10 +14,6 @@ class unit:
         for name in self.names:
             units_names[name] = cls
 
-        def init(self, value):
-            self.value = value
-
-        cls.__init__ = init
         return cls
 
 
@@ -34,7 +31,7 @@ class UndefinedUnitException(Exception):
 
 class OperationError(Exception):
     def __init__(self, message):
-        super().__init__(message)
+        super(OperationError, self).__init__(message)
 
 
 class ScaleUnit(Unit):
@@ -55,6 +52,16 @@ class ScaleUnit(Unit):
         sign = -1 if smaller == self else 1
         return smaller.__class__((bigger.value * k - smaller.value) * sign)
 
+    def __mul__(self, other):
+        if self.domain() == Number:
+            # 1 * 4 days
+            return other.__class__(self.value * other.value)
+        elif other.domain() == Number:
+            # 7 days * 19
+            return self.__class__(self.value * other.value)
+        else:
+            raise ArithmeticError("Cannot multiply {1} and {0}, {2} * {3}".format(self, other, self.domain(), other.domain()))
+
     def _order_arguments(self, other):
         smaller, bigger = sorted((self, other), key=lambda item: item.k())
         k = int(bigger.k() / smaller.k())
@@ -70,21 +77,20 @@ class ScaleUnit(Unit):
         return self.domain() == other.domain()
 
     def domain(self):
-        cls = self.__class__
-        while True:
-            base = cls.__base__
-            if not base.is_domain:
+        domain = self.__class__
+        for cls in getmro(self.__class__):
+            if cls.is_domain:
+                domain = cls
+            else:
                 break
-
-            cls = base
-        return cls
+        return domain
 
     def k(self):
-        cls = self.__class__
         k = 1
-        while cls != ScaleUnit:
+        for cls in getmro(self.__class__):
+            if cls == ScaleUnit:
+                break
             k *= cls.multiplicator
-            cls = cls.__base__
         return k
             
     def __lt__(self, other):
@@ -154,6 +160,8 @@ class Year(Millis):
 
 
 if __name__ == '__main__':
+    a = Day()
+    print(a.k())
     d = Atom(2, Day())
     ms = Atom(1000 * 60, Millis())
     print(d, ms)

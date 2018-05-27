@@ -5,6 +5,17 @@ from unittest import TestCase, main
 from unit import *
 
 
+class TestUnitMul(TestCase):
+
+    def test_simple_mul(self):
+        self.assertEqual(Number(7) * Number(3), Number(21))
+
+    def test_mul_unit_after(self):
+        self.assertEqual(Number(6) * Day(2), Day(12))
+
+    def test_mul_unit_before(self):
+        self.assertEqual(Day(2) * Number(3), Day(6))
+
 class TestUnitAdd(TestCase):
 
     def test_simple_sum(self):
