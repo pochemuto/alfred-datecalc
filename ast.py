@@ -1,5 +1,10 @@
 # coding=utf
 
+def pretty_float(number):
+    if int(number) == number:
+        return str(int(number))
+    else:
+        return str(number)
 
 class AST(object):
     children = ()
@@ -55,7 +60,6 @@ class Text(AST):
 
     def __repr__(self):
         return self.text
-
 
 class Atom(AST):
     def __init__(self, value, unit):
@@ -133,7 +137,7 @@ class Unit:
 
     def __repr__(self):
         if self.value:
-            return "{0}({1})".format(self._default_name(), self.value)
+            return "{0}({1})".format(self._default_name(), pretty_float(self.value))
         else:
             return self._default_name()
 

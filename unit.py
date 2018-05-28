@@ -1,6 +1,6 @@
 # coding=utf
 from __future__ import print_function
-from ast import Unit, Atom
+from ast import Unit, Atom, pretty_float
 from inspect import getmro
 
 units_names = {}
@@ -61,6 +61,15 @@ class ScaleUnit(Unit):
             return self.__class__(self.value * other.value)
         else:
             raise ArithmeticError("Cannot multiply {1} and {0}, {2} * {3}".format(self, other, self.domain(), other.domain()))
+
+    def __div__(self, other):
+        if self.domain() == Number and other.domain() == Number:
+            return self.__class__(self.value / float(other.value))
+        elif other.domain() == Number:
+            # 7 days / 2
+            return self.__class__(self.value / float(other.value))
+        else:
+            raise ArithmeticError("Cannot multiply {1} and {0}, {2} * {3}".format(self, other, self.domain(), other.domain())) 
 
     def _order_arguments(self, other):
         smaller, bigger = sorted((self, other), key=lambda item: item.k())
@@ -129,7 +138,7 @@ class Number(ScaleUnit):
     is_domain = True
 
     def __str__(self):
-        return str(self.value)
+        return pretty_float(self.value)
 
 
 @unit("millisecond", "milliseconds", "ms")

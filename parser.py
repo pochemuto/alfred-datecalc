@@ -48,7 +48,6 @@ class Parser:
             return Atom(t.value, None)
 
         def make_atom(data):
-            print(data)
             value, unit, left = data
             try:
                 value = int(value.value)
@@ -62,7 +61,7 @@ class Parser:
         def make_signed_atom(data):
             sign, atom = data            
             if sign.value == '-':
-                return Number(-1) * atom
+                return MulOperator([Number(-1), atom])
             else: 
                 return atom
             
@@ -113,7 +112,8 @@ class Parser:
         value.define(value_r)
         signed_value = some(sign) + value >> make_signed_atom
         in_braces = open_brace + expr + close_brace + maybe(unit) >> make_unit_define
-        basexpr = in_braces | keyword | signed_value | value | signed_raw_value | raw_value
+        signed_in_braces = some(sign) + in_braces >> make_signed_atom
+        basexpr = in_braces | signed_in_braces | keyword | signed_value | value | signed_raw_value | raw_value
         mulexpr = basexpr + many(mul_op + basexpr) >> make_operator
         addexp = mulexpr + many(add_op + mulexpr) >> make_operator
 

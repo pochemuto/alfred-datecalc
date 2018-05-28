@@ -4,6 +4,15 @@ from unittest import TestCase, main
 
 from unit import *
 
+class TestToString(TestCase):
+
+    def test_number(self):
+        self.assertEquals(str(Number(12)), "12")
+        self.assertEquals(str(Number(-12)), "-12")
+
+    def test_number_float(self):
+        self.assertEquals(str(Number(float(12))), "12")
+        self.assertEquals(str(Number(float(-15))), "-15")
 
 class TestUnitMul(TestCase):
 
@@ -58,9 +67,5 @@ class TestUnitCore(TestCase):
         self.assertEqual(Day(15).domain(), Duration)
         self.assertNotEqual(Day(15).domain(), DateTime)
 
-    def test_my(self):
-        t = Week(1) + Day(5)
-        print(t)
-        
 if __name__ == '__main__':
     main()
