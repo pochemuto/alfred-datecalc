@@ -67,5 +67,9 @@ class TestUnitCore(TestCase):
         self.assertEqual(Day(15).domain(), Duration)
         self.assertNotEqual(Day(15).domain(), DateTime)
 
+    def test_cast_to_number(self):
+        self.assertEqual(Week(4).cast(Number), Number(4))
+        self.assertEqual(Hour(3.1415).cast(Number), Number(3.1415))
+
 if __name__ == '__main__':
     main()

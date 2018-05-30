@@ -53,6 +53,8 @@ class Parser:
                 value = int(value.value)
             except:
                 value = float(value.value)
+            if not unit:
+                unit = Number
             right = unit(value)
             if left:
                 return AddOperator([right, left[0]])
@@ -74,7 +76,7 @@ class Parser:
 
         def make_unit(tokens):
             if not tokens:
-                return Number
+                return None
             unit_name = words(tokens)
             return select_unit(unit_name)
 
@@ -129,7 +131,7 @@ class Parser:
 if __name__ == '__main__':
     parser = Parser()
     
-    inp = "-65"
+    inp = "((1 day + 2 days) week) number"
     print("input:", inp)
     print("tokens:")
 

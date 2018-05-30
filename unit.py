@@ -83,6 +83,8 @@ class ScaleUnit(Unit):
         return self.value * self.k()
 
     def cast(self, unit):
+        if unit == Number:
+            return Number(self.value)
         if not issubclass(unit, self.domain()):
             raise OperationError("Cannot cast {0} to {1}".format(self, unit))
         else:
@@ -133,7 +135,7 @@ class Duration(ScaleUnit):
     is_domain = True
 
 
-@unit()
+@unit("number")
 class Number(ScaleUnit):
     is_domain = True
 
