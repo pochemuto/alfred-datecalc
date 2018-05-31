@@ -24,7 +24,7 @@ class Parser:
             ('WORD', (r'[a-zA-Zа-яА-Я]+',)),
             ('BR', (r'\(|\)',)),
             ('SPACE', (r'[ \t\r\n]+',)),
-            ('NUMBER', (r'[0-9]+\.[0-9]+|\.?[0-9]+',)),
+            ('NUMBER', (r'[0-9]+\.[0-9]+|\.?[0-9]+(?!\.)',)),
             ('COMMA', (r',',)),
             ('OP', (r'[*/+-]',)),
             ('FORMAT', (r'[^ ]+',)),
@@ -95,7 +95,9 @@ class Parser:
 
         def make_root(tokens):
             ast, fmt = tokens
-            return Root(ast, fmt=fmt.value)
+            if fmt:
+                fmt = fmt.value
+            return Root(ast, fmt=fmt)
 
         add = operator('+', AddOperator)
         sub = operator('-', SubOperator)
@@ -129,7 +131,7 @@ class Parser:
         # toplevel = expr + maybe(skip(comma) + format) + skip(finished) >> make_root
 
         format_delim = comma | a(Token('WORD', 'to'))
-        format = some(lambda t: t.type == 'FORMAT')
+        format = some(lambda t: t.type == 'FORMAT') | number
 
         toplevel = expr + maybe(skip(format_delim) + format) + skip(finished) >> make_root
 
@@ -151,7 +153,7 @@ def pretty(ast):
 if __name__ == '__main__':
     parser = Parser()
     
-    inp = "((1 day + 2 days) week) number , #.##"
+    inp = "1 month + 1 day"
     print("input:", inp)
     print("tokens:")
 

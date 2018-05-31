@@ -160,7 +160,7 @@ class Unit:
         return self.__repr__()
 
     def __repr__(self):
-        if self.value:
+        if self.value is not None:
             return "{0}({1})".format(self._default_name(), pretty_float(self.value))
         else:
             return self._default_name()

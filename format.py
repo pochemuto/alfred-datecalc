@@ -1,10 +1,14 @@
 import re
 
 def decimal(fmt, value):
-    match = re.match(r'#\.(#+)', fmt)
+    match = re.match(r'[#0]\.((#+|0+))$', fmt)
     if match:
-        precision = len(match.group(1))
+        zeros = match.group(1)
+        precision = len(zeros)
         decimal_format = '%.' + str(precision) + 'f'
-        return (decimal_format % value).rstrip('0').rstrip('.')
+        result = decimal_format % value
+        if zeros[0] == '#':
+            result = result.rstrip('0').rstrip('.')
+        return result
     else:
         return None
