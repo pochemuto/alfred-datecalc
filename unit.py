@@ -26,7 +26,7 @@ def select_unit(name):
 
 class UndefinedUnitException(Exception):
     def __init__(self, unit_definition):
-        super().__init__("Unknown unit definition: '{}'".format(unit_definition))
+        super(Exception, self).__init__("Unknown unit definition: '{}'".format(unit_definition))
         
 
 class OperationError(Exception):

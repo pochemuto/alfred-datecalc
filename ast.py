@@ -1,5 +1,7 @@
 # coding=utf
 
+import format
+
 def pretty_float(number):
     if int(number) == number:
         return str(int(number))
@@ -9,17 +11,27 @@ def pretty_float(number):
 class AST(object):
     children = ()
 
+    def repr(self):
+        return repr(self)
 
 class Root(AST):
     def __init__(self, expr, fmt=None):
+        self.children = (expr, )
         self.expr = expr
         self.format = fmt
 
     def __repr__(self):
         return "Root( %s, format='%s' )" % (self.expr, self.format)
 
+    def repr(self):
+        return "Root format='%s'" % self.format
+
     def eval(self):
-        return self.expr.eval()
+        result = self.expr.eval()
+        if self.format:
+            return result.format(self.format)
+        else:
+            return result
 
 
 class Operator(AST):
@@ -30,6 +42,9 @@ class Operator(AST):
 
     def __repr__(self):
         return "%s( %s )" % (self.__class__.__name__, (" " + self.value + " ").join(map(repr, self.children)))
+
+    def repr(self):
+        return self.__class__.__name__
 
     def action(self, a, b):
         pass
@@ -87,6 +102,9 @@ class UnitDefine(AST):
     def __repr__(self):
         return "UnitDefine( %s %s )" % (self.children[0], self.unit)
 
+    def repr(self):
+        return "UnitDefine %s" % self.unit
+
     def eval(self):
        return self.children[0].eval().cast(self.unit)
 
@@ -127,6 +145,12 @@ class Unit:
     def eval(self):
         return self
 
+    def format(self, fmt):
+        return format.decimal(fmt, self.value) or self._unknown_format(fmt)
+
+    def _unknown_format(self, fmt):
+        raise Exception('unknown format "' + fmt + '"')
+    
     def __init__(self, value=None, name=None):
         if name:
             self.names = (name,)
@@ -140,6 +164,9 @@ class Unit:
             return "{0}({1})".format(self._default_name(), pretty_float(self.value))
         else:
             return self._default_name()
+
+    def repr(self):
+        return repr(self)
 
     def _default_name(self):
         if self.names:

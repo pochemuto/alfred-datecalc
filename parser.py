@@ -4,6 +4,8 @@ from __future__ import print_function
 from funcparserlib.lexer import make_tokenizer, Token
 from funcparserlib.parser import (some, a, maybe, many, finished, skip,
                                   forward_decl, NoParseError)
+from funcparserlib.util import pretty_tree
+
 import token
 from functools import reduce
 from pprint import pprint
@@ -25,6 +27,7 @@ class Parser:
             ('NUMBER', (r'[0-9]+\.[0-9]+|\.?[0-9]+',)),
             ('COMMA', (r',',)),
             ('OP', (r'[*/+-]',)),
+            ('FORMAT', (r'[^ ]+',)),
         ]
         useless = ['SPACE']
         tokenizer = make_tokenizer(specs)
@@ -91,7 +94,8 @@ class Parser:
             return a(Token('OP', symbol)) >> (lambda _: node)
 
         def make_root(tokens):
-            return Root(tokens)
+            ast, fmt = tokens
+            return Root(ast, fmt=fmt.value)
 
         add = operator('+', AddOperator)
         sub = operator('-', SubOperator)
@@ -123,15 +127,31 @@ class Parser:
 
         # format = word + many(word) >> (lambda tokens: Text(tokens[0].value + words(tokens[1])))
         # toplevel = expr + maybe(skip(comma) + format) + skip(finished) >> make_root
-        toplevel = expr + skip(finished) >> make_root
+
+        format_delim = comma | a(Token('WORD', 'to'))
+        format = some(lambda t: t.type == 'FORMAT')
+
+        toplevel = expr + maybe(skip(format_delim) + format) + skip(finished) >> make_root
 
         return toplevel.parse(seq)
 
+def pretty(ast):
+
+    def kids(node):
+        if isinstance(node, AST):
+            return node.children
+        else:
+            return []
+    
+    def show(node):
+        return node.repr()
+    
+    return pretty_tree(ast, kids, show)
 
 if __name__ == '__main__':
     parser = Parser()
     
-    inp = "((1 day + 2 days) week) number"
+    inp = "((1 day + 2 days) week) number , #.##"
     print("input:", inp)
     print("tokens:")
 
@@ -140,5 +160,5 @@ if __name__ == '__main__':
     print("---- PARSING ----")
     tree = parser._parse(tokens)
     print("tree:")
-    print(tree)
+    print(pretty(tree))
     print("result:", tree.eval())
