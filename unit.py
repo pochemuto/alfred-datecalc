@@ -16,6 +16,25 @@ class unit:
 
         return cls
 
+def complex(cls):
+    add_orig = cls.__add__
+    sub_orig = cls.__sub__
+
+    def add(self, other):
+        if self.weight != other.weight:
+            return ComplexUnit(self, other)
+        else:
+            return add_orig(self, other)
+    
+    def sub(self, other):
+        if self.weight != other.weight:
+            return ComplexUnit(self, other * Number(-1))
+        else:
+            return sub_orig(self, other)
+    
+    cls.__add__ = add
+    cls.__sub__ = sub
+    return cls
 
 def select_unit(name):
     if name in units_names:
@@ -118,10 +137,13 @@ class ScaleUnit(Unit):
 
 class ComplexUnit(Unit):
     def __init__(self, *parts):
-        if len(parts) > 0 and isinstance(parts[0], dict):
+        if len(parts) == 0:
+            raise Exception("empty complex unit")
+        if isinstance(parts[0], dict):
             self._parts = parts[0]
         else:
             self._parts = {u.weight: u for u in parts}
+        self._reduce()
 
     def _compose(self, other, operation):
         result = self._parts.copy()
@@ -146,6 +168,13 @@ class ComplexUnit(Unit):
         if not self._compatible_with(other):
             raise OperationError("Cannot remove {1} from {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
         return self + other * Number(-1)
+
+    def _reduce(self):
+        parts = self._parts
+        self._parts = {k: u for k, u in parts.items() if not u.is_zero()}
+        if len(self._parts) == 0:
+            w = min(parts.keys())
+            self._parts[w] = parts[w]
 
     def _each(self, other, operation):
         result = self._parts.copy()
@@ -193,6 +222,7 @@ class DateTime(Unit):
     is_domain = True
 
 
+@complex
 class Duration(ScaleUnit):
     is_domain = True
 

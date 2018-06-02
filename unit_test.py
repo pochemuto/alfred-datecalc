@@ -74,7 +74,6 @@ class TestUnitCore(TestCase):
 class TestComplexUnit(TestCase):
 
     def testEquals(self):
-        self.assertEqual(ComplexUnit(), ComplexUnit())
         self.assertEqual(ComplexUnit(Number(4)), ComplexUnit(Number(4)))
         self.assertNotEqual(ComplexUnit(Number(4)), ComplexUnit(Number(8)))
     
@@ -157,6 +156,22 @@ class TestComplexUnit(TestCase):
         self.assertEqual(
             Number(-2) * ComplexUnit(Year(2), Day(7)),
             ComplexUnit(Year(-4), Day(-14))
+        )
+
+    def testProducesComples(self):
+        self.assertEqual(Year(14) + Day(5), ComplexUnit(Year(14), Day(5)))
+        self.assertEqual(Day(14) - Month(4), ComplexUnit(Month(-4), Day(14)))
+
+    def testComplexReducing(self):
+        self.assertEqual(ComplexUnit(Day(3)) - ComplexUnit(Day(3)), ComplexUnit(Day(0)))
+        self.assertEqual(ComplexUnit(Month(3), Day(3)) - ComplexUnit(Day(3)), ComplexUnit(Month(3)))
+        self.assertEqual(
+            ComplexUnit(Year(4), Month(3), Day(7)) - ComplexUnit(Year(4), Month(3), Week(1)),
+            ComplexUnit(Day(0))
+        )
+        self.assertEqual(
+            ComplexUnit(Year(4), Month(3), Week(2)) - ComplexUnit(Year(4), Month(3), Day(14)),
+            ComplexUnit(Day(0))
         )
 
 if __name__ == '__main__':

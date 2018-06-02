@@ -145,6 +145,11 @@ class Unit:
     weight = 1
     is_domain = False
 
+    def __init__(self, value=None, name=None):
+        if name:
+            self.names = (name,)
+        self.value = value
+
     def __add__(self, other):
         return NotImplemented
 
@@ -181,11 +186,6 @@ class Unit:
     def _unknown_format(self, fmt):
         raise Exception('unknown format "' + fmt + '"')
     
-    def __init__(self, value=None, name=None):
-        if name:
-            self.names = (name,)
-        self.value = value
-
     def __str__(self):
         return self.__repr__()
 
@@ -210,6 +210,9 @@ class Unit:
     def _compatible_with(self, other):
         return self.domain() == other.domain()
 
+    def is_zero(self):
+        return self.value == 0
+    
     def _default_name(self):
         if self.names:
             return self.names[0]
