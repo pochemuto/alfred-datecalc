@@ -128,6 +128,16 @@ class TestComplexUnit(TestCase):
             ComplexUnit(Year(3), Month(6))
         )
 
+    def testSimpleDiv(self):
+        self.assertEqual(
+            ComplexUnit(Number(7)) / Number(-2),
+            ComplexUnit(Number(-3.5))
+        )
+        self.assertEqual(
+            ComplexUnit(Year(9), Month(2)) / Number(3),
+            ComplexUnit(Year(3), Month(2/3.0))
+        )
+
     def testMultipleNumberFirst(self):
         self.assertEqual(
             Number(-2) * ComplexUnit(Year(2), Day(7)),
