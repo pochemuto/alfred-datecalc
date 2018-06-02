@@ -153,7 +153,7 @@ def pretty(ast):
 if __name__ == '__main__':
     parser = Parser()
     
-    inp = "1 month + 1 day"
+    inp = "22/7, #.####"
     print("input:", inp)
     print("tokens:")
 

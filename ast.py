@@ -1,6 +1,8 @@
 # coding=utf
 
 import format
+from inspect import getmro
+
 
 def pretty_float(number):
     if int(number) == number:
@@ -140,7 +142,35 @@ class DivOperator(Operator):
 class Unit:
     names = []
     multiplicator = 1
+    weight = 1
     is_domain = False
+
+    def __add__(self, other):
+        return NotImplemented
+
+    def __sub__(self, other):
+        return NotImplemented
+
+    def __mul__(self, other):
+        return NotImplemented
+        
+    def __div__(self, other):
+        return NotImplemented
+        
+    def cast(self, unit):
+        raise NotImplementedError()
+        
+    def __lt__(self, other):
+        return NotImplemented
+        
+    def __gt__(self, other):
+        return NotImplemented
+        
+    def __eq__(self, other):
+        return NotImplemented
+        
+    def __hash__(self):
+        return NotImplemented
 
     def eval(self):
         return self
@@ -167,6 +197,18 @@ class Unit:
 
     def repr(self):
         return repr(self)
+
+    def domain(self):
+        domain = self.__class__
+        for cls in getmro(self.__class__):
+            if cls.is_domain:
+                domain = cls
+            else:
+                break
+        return domain
+
+    def _compatible_with(self, other):
+        return self.domain() == other.domain()
 
     def _default_name(self):
         if self.names:

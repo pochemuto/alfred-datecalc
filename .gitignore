@@ -3,6 +3,7 @@ __pycache__
 *.pyc
 *.iml
 .vscode
+*.code-workspace
 .idea
 /home
 /yandex

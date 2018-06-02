@@ -62,6 +62,9 @@ class ScaleUnit(Unit):
         else:
             raise ArithmeticError("Cannot multiply {1} and {0}, {2} * {3}".format(self, other, self.domain(), other.domain()))
 
+    def __rmul__(self, other):
+        return self * other
+
     def __div__(self, other):
         if self.domain() == Number and other.domain() == Number:
             return self.__class__(self.value / float(other.value))
@@ -76,9 +79,6 @@ class ScaleUnit(Unit):
         k = int(bigger.k() / smaller.k())
         return smaller, bigger, k
 
-    def _compatible_with(self, other):
-        return self.domain() == other.domain()
-
     def raw(self):
         return self.value * self.k()
 
@@ -92,15 +92,6 @@ class ScaleUnit(Unit):
 
     def _same_domain(self, other):
         return self.domain() == other.domain()
-
-    def domain(self):
-        domain = self.__class__
-        for cls in getmro(self.__class__):
-            if cls.is_domain:
-                domain = cls
-            else:
-                break
-        return domain
 
     def k(self):
         return ScaleUnit._k_of_unit(self.__class__)
@@ -127,6 +118,76 @@ class ScaleUnit(Unit):
         return self.raw()
 
 
+class ComplexUnit(Unit):
+    def __init__(self, *parts):
+        if len(parts) > 0 and isinstance(parts[0], dict):
+            self._parts = parts[0]
+        else:
+            self._parts = {u.weight: u for u in parts}
+
+    def _compose(self, other, operation):
+        result = self._parts.copy()
+        for part in other._parts:
+            if part in result:
+                result[part] = operation(result[part], other._parts[part])
+            else:
+                result[part] = other._parts[part]
+        return ComplexUnit(result)
+
+    def _op(self, other, operation):
+        if not isinstance(other, ComplexUnit):
+            other = ComplexUnit({other.weight: other})
+        return self._compose(other, operation)
+
+    def __add__(self, other):
+        if not self._compatible_with(other):
+            raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
+        return self._op(other, lambda a, b: a + b)
+
+    def __sub__(self, other):
+        if not self._compatible_with(other):
+            raise OperationError("Cannot remove {1} from {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
+        return self + other * Number(-1)
+
+    def _each(self, other, operation):
+        result = self._parts.copy()
+        for part in result:
+            result[part] = operation(result[part], other)
+        return ComplexUnit(result)
+        
+    def __mul__(self, other):
+        if isinstance(other, Number):
+            return self._each(other, lambda a, b: a * b)
+        else:
+            raise ArithmeticError("Cannot multiply {1} and {0}, {2} * {3}".format(self, other, self.domain(), other.domain()))
+
+    def __rmul__(self, other):
+        return self * other
+        
+    def __div__(self, other):
+        if isinstance(other, Number):
+            return self._each(other, lambda a, b: a / b)
+        else:
+            raise ArithmeticError("Cannot divide {0} to {1}, {2} / {3}".format(self, other, self.domain(), other.domain()))
+        
+    def cast(self, unit):
+        raise NotImplementedError()
+        
+    def __lt__(self, other):
+        return NotImplemented
+        
+    def __gt__(self, other):
+        return NotImplemented
+        
+    def __eq__(self, other):
+        return self._parts == other._parts
+        
+    def __repr__(self):
+        return repr(self._parts.values())
+
+    def __hash__(self):
+        return hash(self._parts)
+
 class DateTime(Unit):
     is_domain = True
 
@@ -136,11 +197,38 @@ class Duration(ScaleUnit):
 
 
 @unit("number")
-class Number(ScaleUnit):
+class Number(Unit):
     is_domain = True
 
     def __str__(self):
         return pretty_float(self.value)
+
+    def __add__(self, other):
+        if isinstance(other, Number):
+            return Number(self.value + other.value)
+        else:
+            return NotImplemented
+
+    def __sub__(self, other):
+        if isinstance(other, Number):
+            return Number(self.value - other.value)
+        else:
+            return NotImplemented
+
+    def __mul__(self, other):
+        if isinstance(other, Number):
+            return Number(self.value * other.value)
+        else:
+            return NotImplemented
+
+    def __div__(self, other):
+        if isinstance(other, Number):
+            return Number(self.value / float(other.value))
+        else:
+            return NotImplemented
+
+    def __eq__(self, other):
+        return isinstance(other, Number) and self.value == other.value
 
 
 @unit("millisecond", "milliseconds", "ms")
@@ -174,13 +262,12 @@ class Week(Day):
 
 
 @unit("month", "months", "m")
-class Month(Millis):
-    pass
-
+class Month(Duration):
+    weight = 2
 
 @unit("year", "years", "y")
-class Year(Millis):
-    pass
+class Year(Duration):
+    weight = 3
 
 
 if __name__ == '__main__':

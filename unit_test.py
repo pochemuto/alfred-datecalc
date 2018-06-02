@@ -71,5 +71,68 @@ class TestUnitCore(TestCase):
         self.assertEqual(Week(4).cast(Number), Number(4))
         self.assertEqual(Hour(3.1415).cast(Number), Number(3.1415))
 
+class TestComplexUnit(TestCase):
+
+    def testEquals(self):
+        self.assertEqual(ComplexUnit(), ComplexUnit())
+        self.assertEqual(ComplexUnit(Number(4)), ComplexUnit(Number(4)))
+        self.assertNotEqual(ComplexUnit(Number(4)), ComplexUnit(Number(8)))
+    
+    def testSimpleAdd(self):
+        self.assertEqual(
+            ComplexUnit(Number(4)) + ComplexUnit(Number(8)), 
+            ComplexUnit(Number(12))
+        )
+        self.assertEqual(
+            ComplexUnit(Month(1), Day(5)) + ComplexUnit(Month(3), Day(9)), 
+            ComplexUnit(Month(4), Day(14))
+        )
+        self.assertEqual(
+            ComplexUnit(Month(1), Day(5)) + ComplexUnit(Month(3), Week(4)), 
+            ComplexUnit(Month(4), Day(4 * 7 + 5))
+        )
+        self.assertEqual(
+            ComplexUnit(Month(4), Day(2)) + ComplexUnit(Year(7), Day(3)), 
+            ComplexUnit(Year(7), Month(4), Day(5))
+        )
+    
+    def testSimpleSub(self):
+        self.assertEqual(
+            ComplexUnit(Number(4)) - ComplexUnit(Number(7)), 
+            ComplexUnit(Number(-3))
+        )
+        self.assertEqual(
+            ComplexUnit(Month(1), Day(5)) - ComplexUnit(Month(3), Day(9)), 
+            ComplexUnit(Month(-2), Day(-4))
+        )
+        self.assertEqual(
+            ComplexUnit(Month(1), Day(5)) - ComplexUnit(Month(3), Week(4)), 
+            ComplexUnit(Month(-2), Day(-4 * 7 + 5))
+        )
+        self.assertEqual(
+            ComplexUnit(Month(4), Day(2)) - ComplexUnit(Year(7), Day(3)), 
+            ComplexUnit(Year(-7), Month(4), Day(-1))
+        )
+
+    def testSimpleMul(self):
+        self.assertEqual(
+            ComplexUnit(Number(8)) * Number(2),
+            ComplexUnit(Number(16))
+        )
+        self.assertEqual(
+            ComplexUnit(Number(8)) * Number(-1),
+            ComplexUnit(Number(-8))
+        )
+        self.assertEqual(
+            ComplexUnit(Year(1), Month(2)) * Number(3),
+            ComplexUnit(Year(3), Month(6))
+        )
+
+    def testMultipleNumberFirst(self):
+        self.assertEqual(
+            Number(-2) * ComplexUnit(Year(2), Day(7)),
+            ComplexUnit(Year(-4), Day(-14))
+        )
+
 if __name__ == '__main__':
     main()
