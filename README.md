@@ -28,7 +28,7 @@ Alfred Date Calc
     4/5, 0.0000 => 0.8000
     ```
 
-- complex unit
+- complex unit ☑️
 
     ```
     1 month + 14 days => duration(month(1), week(2))
