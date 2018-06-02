@@ -3,32 +3,32 @@ Alfred Date Calc
 
 **Roadmap**
 
--  number expressions ☑️
+- [x] number expressions
     
     ```
     (1 + 3) * 4 => 13
     ```
 
-- simple unit support ☑️
+- [x] simple unit support
 
     ```
     1 day + 5 minutes / 2 => minute(1442.5)
     ```
 
-- unit convert ☑️
+- [x] unit convert
 
     ```
     (5 days) week => week(0.714285714286)
     ```
 
-- number formatting ☑️
+- [x] number formatting
 
     ```
     22/7, #.#### => 3.1429
     4/5, 0.0000 => 0.8000
     ```
 
-- complex unit ☑️
+- [x] complex unit
 
     ```
     1 month + 14 days => duration(month(1), week(2))
