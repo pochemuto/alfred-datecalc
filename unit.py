@@ -66,9 +66,7 @@ class ScaleUnit(Unit):
         return self * other
 
     def __div__(self, other):
-        if self.domain() == Number and other.domain() == Number:
-            return self.__class__(self.value / float(other.value))
-        elif other.domain() == Number:
+        if other.domain() == Number:
             # 7 days / 2
             return self.__class__(self.value / float(other.value))
         else:
@@ -172,7 +170,10 @@ class ComplexUnit(Unit):
         
     def cast(self, unit):
         raise NotImplementedError()
-        
+
+    def domain(self):
+        return self._parts.itervalues().next().domain()
+
     def __lt__(self, other):
         return NotImplemented
         

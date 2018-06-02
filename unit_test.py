@@ -95,6 +95,21 @@ class TestComplexUnit(TestCase):
             ComplexUnit(Month(4), Day(2)) + ComplexUnit(Year(7), Day(3)), 
             ComplexUnit(Year(7), Month(4), Day(5))
         )
+
+    def testAddOther(self):
+        self.assertEqual(
+            ComplexUnit(Month(1), Day(5)) + Month(3), 
+            ComplexUnit(Month(4), Day(5))
+        )
+
+    def testSubOther(self):
+        self.assertEqual(
+            ComplexUnit(Month(1), Day(5)) + Day(2), 
+            ComplexUnit(Month(1), Day(7))
+        )
+
+    def testDifferentDomains(self):
+        self.assertRaises(OperationError, lambda: ComplexUnit(Month(1)) + ComplexUnit(Number(1)))
     
     def testSimpleSub(self):
         self.assertEqual(
