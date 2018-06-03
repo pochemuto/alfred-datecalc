@@ -2,6 +2,7 @@
 from __future__ import print_function
 from ast import Unit, Atom, pretty_float
 from inspect import getmro
+from datetime import datetime, timedelta
 
 units_names = {}
 
@@ -21,13 +22,13 @@ def complex(cls):
     sub_orig = cls.__sub__
 
     def add(self, other):
-        if self.weight != other.weight:
+        if self.domain() == other.domain() and self.weight != other.weight:
             return ComplexUnit(self, other)
         else:
             return add_orig(self, other)
     
     def sub(self, other):
-        if self.weight != other.weight:
+        if self.domain() == other.domain() and self.weight != other.weight:
             return ComplexUnit(self, other * Number(-1))
         else:
             return sub_orig(self, other)
@@ -58,7 +59,8 @@ class ScaleUnit(Unit):
     
     def __add__(self, other):
         if not self._compatible_with(other):
-            raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
+            return NotImplemented
+            # raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
         
         smaller, bigger, k = self._order_arguments(other)
         return smaller.__class__(bigger.value * k + smaller.value)
@@ -161,7 +163,8 @@ class ComplexUnit(Unit):
 
     def __add__(self, other):
         if not self._compatible_with(other):
-            raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
+            # raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
+            return NotImplemented
         return self._op(other, lambda a, b: a + b)
 
     def __sub__(self, other):
@@ -221,10 +224,46 @@ class ComplexUnit(Unit):
 class DateTime(Unit):
     is_domain = True
 
+    def __init__(self, value=None):
+        if value is None:
+            value = datetime.now()
+        self.value = value
+
+    def __repr__(self):
+        return "date(" + self.value.isoformat() + ")"
+
+    def __add__(self, other):
+        if isinstance(other, Duration):
+            return DateTime(self.value + other.delta())
+        elif isinstance(other, Month):
+            return DateTime(self.add_months(self.value, other.value))
+        else:
+            return NotImplemented
+    
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __sub__(self, other):
+        if isinstance(other, Duration):
+            return DateTime(self.value + other.delta())
+        elif isinstance(other, DateTime):
+            return NotImplemented
+        else:
+            return NotImplemented
+
+    def add_months(self, sourcedate, months):
+        month = sourcedate.month - 1 + months
+        year = sourcedate.year + month // 12
+        month = month % 12 + 1
+        day = min(sourcedate.day,calendar.monthrange(year,month)[1])
+        return datetime.date(year, month, day, sourcedate.hour, sourcedate.minute, sourcedate.second, sourcedate.millisecond)
 
 @complex
 class Duration(ScaleUnit):
     is_domain = True
+    
+    def delta(self):
+        return timedelta(milliseconds=self.raw())
 
 
 @unit("number")
@@ -277,7 +316,7 @@ class Minute(Second):
     multiplicator = 60
 
 
-@unit("hours", "hour", "h")
+@unit("hour", "hours", "h")
 class Hour(Minute):
     multiplicator = 60
 
@@ -296,6 +335,7 @@ class Week(Day):
 class Month(Duration):
     weight = 2
 
+    
 @unit("year", "years", "y")
 class Year(Duration):
     weight = 3

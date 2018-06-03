@@ -11,7 +11,7 @@ from functools import reduce
 from pprint import pprint
 
 from ast import *
-from unit import select_unit, Number
+from unit import select_unit, Number, DateTime
 
 
 class Parser:
@@ -104,7 +104,7 @@ class Parser:
         mul = operator('*', MulOperator)
         div = operator('/', DivOperator)
         sign = lambda t: t.type == 'OP' and t.value == '-'
-        now = a(Token('WORD', 'now')) >> (lambda _: Now())
+        now = a(Token('WORD', 'now')) >> (lambda _: DateTime())
         yesterday = a(Token('WORD', 'yesterday')) >> (lambda _: Yesterday())
         keyword = now | yesterday
         add_op = add | sub
@@ -153,7 +153,7 @@ def pretty(ast):
 if __name__ == '__main__':
     parser = Parser()
     
-    inp = "22/7, #.####"
+    inp = "1 month + now"
     print("input:", inp)
     print("tokens:")
 
