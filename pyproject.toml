@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "alfred-date-calc"
+version = "0.1.0"
+description = ""
+authors = ["Alexander Kramarev <pochemuto@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^2.7"
+funcparserlib = "^0.3.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "^4.6"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

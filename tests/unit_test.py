@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # encoding=utf
 from unittest import TestCase, main
+from alfred_date_calc.unit import *
 
-from unit import *
 
 class TestToString(TestCase):
 
@@ -14,6 +14,7 @@ class TestToString(TestCase):
         self.assertEquals(str(Number(float(12))), "12")
         self.assertEquals(str(Number(float(-15))), "-15")
 
+
 class TestUnitMul(TestCase):
 
     def test_simple_mul(self):
@@ -24,6 +25,7 @@ class TestUnitMul(TestCase):
 
     def test_mul_unit_before(self):
         self.assertEqual(Day(2) * Number(3), Day(6))
+
 
 class TestUnitAdd(TestCase):
 
@@ -45,7 +47,7 @@ class TestUnitSub(TestCase):
     def test_simple_sub_cross_unit(self):
         self.assertEqual(Week(2) - Day(3), Day(11))
 
-    
+
 class TestUnitCore(TestCase):
 
     def test_k(self):
@@ -71,60 +73,62 @@ class TestUnitCore(TestCase):
         self.assertEqual(Week(4).cast(Number), Number(4))
         self.assertEqual(Hour(3.1415).cast(Number), Number(3.1415))
 
+
 class TestComplexUnit(TestCase):
 
     def testEquals(self):
         self.assertEqual(ComplexUnit(Number(4)), ComplexUnit(Number(4)))
         self.assertNotEqual(ComplexUnit(Number(4)), ComplexUnit(Number(8)))
-    
+
     def testSimpleAdd(self):
         self.assertEqual(
-            ComplexUnit(Number(4)) + ComplexUnit(Number(8)), 
+            ComplexUnit(Number(4)) + ComplexUnit(Number(8)),
             ComplexUnit(Number(12))
         )
         self.assertEqual(
-            ComplexUnit(Month(1), Day(5)) + ComplexUnit(Month(3), Day(9)), 
+            ComplexUnit(Month(1), Day(5)) + ComplexUnit(Month(3), Day(9)),
             ComplexUnit(Month(4), Day(14))
         )
         self.assertEqual(
-            ComplexUnit(Month(1), Day(5)) + ComplexUnit(Month(3), Week(4)), 
+            ComplexUnit(Month(1), Day(5)) + ComplexUnit(Month(3), Week(4)),
             ComplexUnit(Month(4), Day(4 * 7 + 5))
         )
         self.assertEqual(
-            ComplexUnit(Month(4), Day(2)) + ComplexUnit(Year(7), Day(3)), 
+            ComplexUnit(Month(4), Day(2)) + ComplexUnit(Year(7), Day(3)),
             ComplexUnit(Year(7), Month(4), Day(5))
         )
 
     def testAddOther(self):
         self.assertEqual(
-            ComplexUnit(Month(1), Day(5)) + Month(3), 
+            ComplexUnit(Month(1), Day(5)) + Month(3),
             ComplexUnit(Month(4), Day(5))
         )
 
     def testSubOther(self):
         self.assertEqual(
-            ComplexUnit(Month(1), Day(5)) + Day(2), 
+            ComplexUnit(Month(1), Day(5)) + Day(2),
             ComplexUnit(Month(1), Day(7))
         )
 
     def testDifferentDomains(self):
-        self.assertRaises(OperationError, lambda: ComplexUnit(Month(1)) + ComplexUnit(Number(1)))
-    
+        self.assertRaises(OperationError, lambda: ComplexUnit(
+            Month(1)) + ComplexUnit(Number(1)))
+
     def testSimpleSub(self):
         self.assertEqual(
-            ComplexUnit(Number(4)) - ComplexUnit(Number(7)), 
+            ComplexUnit(Number(4)) - ComplexUnit(Number(7)),
             ComplexUnit(Number(-3))
         )
         self.assertEqual(
-            ComplexUnit(Month(1), Day(5)) - ComplexUnit(Month(3), Day(9)), 
+            ComplexUnit(Month(1), Day(5)) - ComplexUnit(Month(3), Day(9)),
             ComplexUnit(Month(-2), Day(-4))
         )
         self.assertEqual(
-            ComplexUnit(Month(1), Day(5)) - ComplexUnit(Month(3), Week(4)), 
+            ComplexUnit(Month(1), Day(5)) - ComplexUnit(Month(3), Week(4)),
             ComplexUnit(Month(-2), Day(-4 * 7 + 5))
         )
         self.assertEqual(
-            ComplexUnit(Month(4), Day(2)) - ComplexUnit(Year(7), Day(3)), 
+            ComplexUnit(Month(4), Day(2)) - ComplexUnit(Year(7), Day(3)),
             ComplexUnit(Year(-7), Month(4), Day(-1))
         )
 
@@ -163,16 +167,21 @@ class TestComplexUnit(TestCase):
         self.assertEqual(Day(14) - Month(4), ComplexUnit(Month(-4), Day(14)))
 
     def testComplexReducing(self):
-        self.assertEqual(ComplexUnit(Day(3)) - ComplexUnit(Day(3)), ComplexUnit(Day(0)))
-        self.assertEqual(ComplexUnit(Month(3), Day(3)) - ComplexUnit(Day(3)), ComplexUnit(Month(3)))
+        self.assertEqual(ComplexUnit(Day(3)) -
+                         ComplexUnit(Day(3)), ComplexUnit(Day(0)))
+        self.assertEqual(ComplexUnit(Month(3), Day(3)) -
+                         ComplexUnit(Day(3)), ComplexUnit(Month(3)))
         self.assertEqual(
-            ComplexUnit(Year(4), Month(3), Day(7)) - ComplexUnit(Year(4), Month(3), Week(1)),
+            ComplexUnit(Year(4), Month(3), Day(7)) -
+            ComplexUnit(Year(4), Month(3), Week(1)),
             ComplexUnit(Day(0))
         )
         self.assertEqual(
-            ComplexUnit(Year(4), Month(3), Week(2)) - ComplexUnit(Year(4), Month(3), Day(14)),
+            ComplexUnit(Year(4), Month(3), Week(2)) -
+            ComplexUnit(Year(4), Month(3), Day(14)),
             ComplexUnit(Day(0))
         )
+
 
 if __name__ == '__main__':
     main()

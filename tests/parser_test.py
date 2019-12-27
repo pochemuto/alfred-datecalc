@@ -1,10 +1,12 @@
-from parser import Parser
 from unittest import TestCase, main
+from alfred_date_calc.parser import Parser
+
 
 def eval(text):
     parser = Parser()
     tree = parser.parse(text)
     return str(tree.eval())
+
 
 class NumberOperations(TestCase):
     def test_number(self):
@@ -24,7 +26,7 @@ class NumberOperations(TestCase):
         self.assertEquals(eval("(-42)"), "-42")
         self.assertEquals(eval("-(42)"), "-42")
         self.assertEquals(eval("-(-42)"), "42")
-        
+
     def test_negative_float(self):
         self.assertEquals(eval("-14.7"), "-14.7")
 
@@ -56,6 +58,7 @@ class NumberOperations(TestCase):
         self.assertEquals(eval("10 / 4"), "2.5")
         self.assertEquals(eval("10 / 2.5"), "4")
         self.assertAlmostEquals(float(eval("1 / 3")), 1 / 3.0, 5)
+
 
 if __name__ == '__main__':
     main()

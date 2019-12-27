@@ -59,8 +59,7 @@ class ScaleUnit(Unit):
     
     def __add__(self, other):
         if not self._compatible_with(other):
-            return NotImplemented
-            # raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
+            raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
         
         smaller, bigger, k = self._order_arguments(other)
         return smaller.__class__(bigger.value * k + smaller.value)
@@ -163,8 +162,7 @@ class ComplexUnit(Unit):
 
     def __add__(self, other):
         if not self._compatible_with(other):
-            # raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
-            return NotImplemented
+            raise OperationError("Cannot add {1} to {0}, {2} + {3}".format(self, other, self.domain(), other.domain()))
         return self._op(other, lambda a, b: a + b)
 
     def __sub__(self, other):
